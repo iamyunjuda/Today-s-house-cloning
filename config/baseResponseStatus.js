@@ -36,7 +36,8 @@ module.exports = {
 
 
     SHOP_MENUID_EMPTY :{ "isSuccess": false, "code": 2021, "message": "메뉴ID를 입력해주세요." },
-    SHOP_ITEMNAME_EMPTY :{ "isSuccess": false, "code": 20222, "message": "아이템이름을 입력해주세요." },
+    SHOP_ITEMNAME_EMPTY :{ "isSuccess": false, "code": 2022, "message": "아이템이름을 입력해주세요." },
+    SHOP_ITEMID_EMPTY :{ "isSuccess": false, "code": 2023, "message": "아이템ID를 입력해주세요." },
     // Response error
     SIGNUP_REDUNDANT_EMAIL : { "isSuccess": false, "code": 3001, "message":"중복된 이메일입니다." },
     SIGNUP_REDUNDANT_NICKNAME : { "isSuccess": false, "code": 3002, "message":"중복된 닉네임입니다." },

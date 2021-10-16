@@ -108,6 +108,103 @@ async function   selectItems(connection, itemName) {
     return itemsRows;
 }
 
+async function   selectDeliveryInfo(connection, itemId) {
+    const selectDeliveryInfoQuery = `
+
+        select deliveryWay, deliveryFee, paymentWay,
+               case
+                   when freeDeliveryCondition!='' then concat(FORMAT(freeDeliveryCondition,0),'원 이상 구매시 무료배송')
+                   END as freeDeliveryCondition,
+               case
+                   when extraDeliveryFee != 0 then concat(format(extraDeliveryFee,0),'원') END as 'extraDeliveryFee',
+
+                impossiblePlace, concat(FORMAT(returnPrice,0),'원') as returnDeliveryPrice , concat(format(returnPrice*2,0),'원') as returnTurnaroundDeliveryPrice,
+               returnAddress, returnInfo, companyName, master, companyAddress, phoneNumber,email,number
+        from DeliveryInfo where itemId= ?;
+
+
+    `;
+    const [itemsRows] = await connection.query(selectDeliveryInfoQuery,itemId);
+
+    return itemsRows;
+}
+
+async function   selectPhotoList(connection, itemId) {
+    const selectDeliveryInfoQuery = `
+
+        SELECT photoUrl From ItemPicture where itemId = ?;
+
+    `;
+    const [itemsRows] = await connection.query(selectDeliveryInfoQuery,itemId);
+
+    return itemsRows;
+}
+async function   selectContentList(connection, itemId) {
+    const selectContentLisQuery = `
+        select I.companyName, I.itemName,I.reviewRate, I.price, I.sale,  (100-ceil(round(I.sale/I.price,3)*100)) as percenttage,
+               concat(ceil(I.sale*0.003),'P 적립 (WELCOME 0.3% 적용)') as profit,
+               case when I.sale > 50000
+                        then concat('월 ',format(ceil(I.sale/7),0),'원 (7개월) 무이자활부')END as 'monthlyPay',
+
+                case when I.deliveryFee='Y' && I.menuId=1 THEN concat(D.deliveryFee)
+                     when  I.deliveryFee='N' Then  concat(D.deliveryFee)  END  as deliveryFee,
+               case when I.deliveryFee='Y' && I.menuId=1 THEN concat(D.paymentWay) END as paymentMethod,
+               case when D.freeDeliveryCondition!='' then concat(Format(D.freeDeliveryCondition,0),'원') END as freeDeliveryFeeCondition,
+               (D.deliveryWay) ,
+               case when  D.impossiblePlace!='배송불가지역이 없습니다.' then  D.impossiblePlace END as impossiblePlace,
+               case when  D.impossiblePlace!='배송불가지역이 없습니다.' then  D.extraDeliveryFee END as extraDeliveryFee,
+               I.companyName,  I.detailedImage
+        from (Item I inner Join DeliveryInfo D on I.itemId= D.itemID)
+        where  I.itemId=?;
+
+
+    `;
+    const [itemsRows] = await connection.query(selectContentLisQuery,itemId);
+
+    return itemsRows;
+}
+
+async function   selectTotalReviewRate(connection, params) {
+    const selectContentLisQuery = `
+        select
+            case  when itemId=? Then  AVG(reviewAvg) END as avgRate
+        from ReviewRate where itemId=?;
+
+
+    `;
+    const [itemsRows] = await connection.query(selectContentLisQuery,params);
+
+    return itemsRows;
+}
+async function   selectTotalReviewNum(connection, itemId) {
+    const selectTotalReviewNumQuery = `
+        select count(reviewId)as reviewNum from Review where itemId=?
+    `;
+    const [itemsRows] = await connection.query(selectTotalReviewNumQuery,itemId);
+
+    return itemsRows;
+}
+
+
+async function   selectReviewListRate(connection, itemId) {
+    const selectReviewListQuery = `
+        select R.reviewId,
+               (select U.userNickName from User Where userId=R.userId) as userName,
+               (select B.reviewAvg from ReviewRate where userId= R.userId) as reviewAvg,
+               concat(R.createdAt, '오늘의집 구매'),
+               R.photo, R.context,
+               (select count(helpedId) from ReviewHelped where reviewId = R.reviewId ) as helpedNum
+        From ((Review R inner join User U on R.userId= U.userId )
+                 inner join ReviewRate B on R.userId=B.userId)where R.itemId=?
+
+    `;
+    const [itemsRows] = await connection.query(selectReviewListQuery,itemId);
+
+    return itemsRows;
+}
+
+
+
 
 
 module.exports = {
@@ -117,4 +214,11 @@ module.exports = {
     selectFilteredLight,
     selectFilteredAppliance,
     selectItems,
+    selectDeliveryInfo,
+    selectPhotoList,
+    selectContentList,selectTotalReviewRate,selectReviewListRate,
+    selectTotalReviewNum,
+
+
+
 };

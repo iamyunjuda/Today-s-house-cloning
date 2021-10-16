@@ -87,3 +87,54 @@ exports.retrieveItemsList = async function (itemName) {
         return furnitureListResult;
 
 };
+
+exports.retrieveDeliveryInfoList = async function (itemId) {
+
+
+        const connection = await pool.getConnection(async (conn) => conn);
+        const deliveryInfoListResult = await shopDao.selectDeliveryInfo(connection,itemId);
+        connection.release();
+        return deliveryInfoListResult;
+
+};
+exports.retrieveItemDetails = async function (itemId) {
+
+        const connection = await pool.getConnection(async (conn) => conn);
+        try {
+                const params =[itemId,itemId];
+               await connection.beginTransaction();
+               const result=[];
+
+
+               const selectPhotoListResult = await shopDao.selectPhotoList(connection, itemId);
+               var pre ={"photoImage" : selectPhotoListResult };
+               result.push(pre);
+
+               const selectContentListResult = await shopDao.selectContentList(connection, itemId);
+                const pre1 ={"itemInfo" : selectContentListResult };
+                result.push(pre1);
+
+               const selectTotalReviewRateResult  = await shopDao.selectTotalReviewRate(connection, params);
+                const pre2 ={"totalReivewRate" : selectTotalReviewRateResult };
+                result.push(pre2);
+
+                ;
+                const selectTotalReviewNumResult  = await shopDao.selectTotalReviewNum(connection, itemId);
+                const pre3 ={"totalReviewNum" : selectTotalReviewNumResult };
+                result.push(pre3);
+                //result.push(selectTotalReviewRateResult);
+
+               const selectReviewListResult = await shopDao.selectReviewListRate(connection, itemId);
+                const pre4 ={"reviewList" : selectReviewListResult };
+                result.push(pre4);
+
+               //result.push(selectReviewListResult);
+               await connection.commit();
+                connection.release();
+                return result;
+        }
+        catch (err){
+
+
+        }
+};

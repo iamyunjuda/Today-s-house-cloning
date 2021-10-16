@@ -93,3 +93,52 @@ exports.getItems = async function (req, res) {
 
 
 };
+/**
+ * API No. 8
+ * API Name : 아이템 상세페이지
+ * [get] /app/:itemId
+ * pathVariable :  itemId
+ *
+ */
+
+exports.getItemDetails = async function (req, res) {
+
+    const itemId = req.params.itemId;
+
+    // 빈 값 체크
+    if (!itemId)
+        return res.send(response(baseResponse.SHOP_ITEMID_EMPTY));
+
+    const getItemDetailsResponse = await shopProvider.retrieveItemDetails(itemId);
+
+    return res.send(response(baseResponse.SUCCESS,getItemDetailsResponse));
+
+
+
+
+};
+
+
+
+/**
+ * API No. 9
+ * API Name : 아이템 교환,환불
+ * [get] /app/:itemId/delivery
+ * pathVariable :  itemId
+ *
+ */
+
+exports.getDeliveryInfo = async function (req, res) {
+
+    const itemId = req.params.itemId;
+    // 빈 값 체크
+    if (!itemId)
+        return res.send(response(baseResponse.SHOP_ITEMID_EMPTY));
+
+    const getDeliveryInfoListResponse = await shopProvider.retrieveDeliveryInfoList(itemId);
+    return res.send(response(baseResponse.SUCCESS,getDeliveryInfoListResponse));
+
+
+
+
+};
