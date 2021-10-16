@@ -14,6 +14,9 @@
 #### 10월 16일 토요일 개발일지
 ------
 1. 목표 : API 3개 설계하기
+2. API 설계서 초안
+![image](https://user-images.githubusercontent.com/91481253/137576001-eb2d279e-7c75-408f-8ddb-2b9d524862e4.png)
+
 
 
 
