@@ -2,6 +2,7 @@ const { pool } = require("../../../config/database");
 const { logger } = require("../../../config/winston");
 
 const shopDao = require("./shopDao");
+const {errResponse} = require("../../../config/response");
 
 // Provider: Read 비즈니스 로직 처리
 
@@ -15,14 +16,17 @@ exports.retrieveMenuItemsList = async function (menuId) {
 
 };
 
-exports.retrieveFilteredFurnitureItemsList = async function (menuId, numOfPeople, material, used, color) {
+exports.retrieveFilteredFurnitureItemsList = async function (numOfPeople, material, used, color) {
 
 
-        if(numOfPeople=="") numOfPeople = '%';
-        if(material=="") material = '%';
-        if(used=="") used = '%';
-        if(color=="") color = '%';
+        if(numOfPeople==null) numOfPeople = '%';
 
+        if(material==null) material = '%';
+    //console.log(material);
+        if(used==null) used = '%';
+    //console.log(used);
+        if(color==null) color = '%';
+   // console.log(color);
         const params= [numOfPeople, material, used, color]
         const connection = await pool.getConnection(async (conn) => conn);
         const furnitureListResult = await shopDao.selectFilteredFurniture(connection,params);
@@ -33,9 +37,9 @@ exports.retrieveFilteredFurnitureItemsList = async function (menuId, numOfPeople
 
 exports.retrieveFilteredFabricItemsList = async function (menuId,  season, color,pattern) {
 
-        if(season=="") season = '%';
-        if(color=="") color = '%';
-        if(pattern=="") pattern = '%';
+        if(season==null) season = '%';
+        if(color==null) color = '%';
+        if(pattern==null) pattern = '%';
 
 
         const params= [color,season, pattern]
@@ -48,10 +52,10 @@ exports.retrieveFilteredFabricItemsList = async function (menuId,  season, color
 
 exports.retrieveFilteredLightItemsList = async function (menuId, color, material,type,design) {
 
-        if(color=="") color = '%';
-        if(material=="") material = '%';
-        if(type=="") type = '%';
-        if(design=="") design = '%';
+        if(color==null) color = '%';
+        if(material==null) material = '%';
+        if(type==null) type = '%';
+        if(design==null) design = '%';
 
         const params= [color, material,type,design]
         const connection = await pool.getConnection(async (conn) => conn);
@@ -62,9 +66,9 @@ exports.retrieveFilteredLightItemsList = async function (menuId, color, material
 };
 exports.retrieveFilteredApplianceItemsList = async function (menuId,brand, energyEfficiency,design) {
 
-        if(brand=="") brand = '%';
-        if(energyEfficiency=="") energyEfficiency = '%';
-        if(design=="") design = '%';
+        if(brand==null) brand = '%';
+        if(energyEfficiency==null) energyEfficiency = '%';
+        if(design==null) design = '%';
 
 
         const params= [brand, energyEfficiency,design]
@@ -77,12 +81,12 @@ exports.retrieveFilteredApplianceItemsList = async function (menuId,brand, energ
 
 exports.retrieveItemsList = async function (itemName) {
 
-        if(itemName=="") itemName = '%';
-
+        if(itemName==null) itemName = '%';
+        else newItemName='%'+itemName+'%';
 
 
         const connection = await pool.getConnection(async (conn) => conn);
-        const furnitureListResult = await shopDao.selectItems(connection,itemName);
+        const furnitureListResult = await shopDao.selectItems(connection,newItemName);
         connection.release();
         return furnitureListResult;
 
@@ -138,3 +142,75 @@ exports.retrieveItemDetails = async function (itemId) {
 
         }
 };
+
+exports.retrieveUserIdExist = async function (userId) {
+
+    const connection = await pool.getConnection(async (conn) => conn);
+
+        await connection.beginTransaction();
+
+
+        const selectUserIdNum = await shopDao.selectUserIdNum(connection, userId);
+        await connection.commit();
+        connection.release();
+        return selectUserIdNum;
+
+};
+exports.retrieveUserIdStatus = async function (userId) {
+
+    const connection = await pool.getConnection(async (conn) => conn);
+
+    await connection.beginTransaction();
+
+
+    const selectUserIdStatus = await shopDao.selectUserIdStatus(connection, userId);
+    await connection.commit();
+    connection.release();
+    return selectUserIdStatus;
+
+};
+exports.retrieveCheckResponsibility = async function (userId,itemId) {
+
+    const connection = await pool.getConnection(async (conn) => conn);
+
+    await connection.beginTransaction();
+    const para = [userId, itemId];
+
+    const selectBoughtHistory = await shopDao.selectBoughtHistory(connection, para);
+
+    await connection.commit();
+    connection.release();
+    //console.log(selectBoughtHistory[0]=='0');
+    return selectBoughtHistory;
+
+
+};
+
+
+exports.retrieveCheckReviewExist = async function (userId,itemId) {
+
+    const connection = await pool.getConnection(async (conn) => conn);
+
+    await connection.beginTransaction();
+    const para = [userId, itemId];
+
+    const selectReviewExist = await shopDao.selectReviewExist(connection, para);
+    await connection.commit();
+    connection.release();
+    return selectReviewExist;
+
+};
+exports.retrieveGetMyReview = async function (userId) {
+
+    const connection = await pool.getConnection(async (conn) => conn);
+
+    await connection.beginTransaction();
+
+
+    const selectMyReviews = await shopDao.selectMyReviews(connection, userId);
+    await connection.commit();
+    connection.release();
+    return selectMyReviews;
+
+};
+

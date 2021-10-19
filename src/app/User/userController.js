@@ -16,9 +16,9 @@ const {emit} = require("nodemon");
 exports.postUsers = async function (req, res) {
 
     /**
-     * Body: email, password, nickname
+     * Body: email, password, nickname, contract1, contract2, contract3,contract4,friendName
      */
-    const {email, password, nickname, contract1, contract2, contract3,contract4} = req.body;
+    const {email, password, nickname, contract1, contract2, contract3,contract4,friendName} = req.body;
 
     // 빈 값 체크
     if (!email)
@@ -64,7 +64,8 @@ exports.postUsers = async function (req, res) {
         email,
         password,
         nickname,
-        contract4
+        contract4,
+        friendName
     );
 
     return res.send(signUpResponse);

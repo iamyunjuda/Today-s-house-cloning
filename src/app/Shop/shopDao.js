@@ -14,19 +14,19 @@ async function selectMenuItems(connection,menuId) {
 }
 async function selectFilteredFurniture(connection, params) {
     const selectItemsListQuery = `
-        select F.itemId,
-               (select photoUrl from FurniturePicture
-                where photoId = (select max(photoId) from FurniturePicture where itemId= F.itemId)) as mainPic,
-               (select I.companyName) as companyName,
-               (select I.itemName) as itemName,
-               (select I.sale) as salePrice,
-               (select I.price) as originalPrie,
-               (100-ceil(round(I.sale/I.price,3)*100)) as percenttage,
-               (select I.deliveryFee) as deliveryFee,
-               (select count(reviewId) from Review where itemId= I.itemId) as numOfReview
-        from (Furniture F inner join  Item I on F.itemId =I.itemId)
-        where numPeople Like ? and material Like  ?  and used Like ? and color Like  ? ;
-
+        select itemId,
+               (select photoUrl from ItemPicture
+                where photoId = (select max(photoId) from ItemPicture where itemId= Item.itemId)) as mainPic,
+               companyName as companyName,
+               itemName as itemName,
+               sale as salePrice,
+               price as originalPrice,
+               (100-ceil(round(sale/price,3)*100)) as percenttage,
+               deliveryFee as deliveryFee,
+               (select AVG(reviewAvg) From ReviewRate where ReviewRate.itemId=Item.itemId) as reviewRate,
+               ( select count(reviewId) from Review where itemId= Item.itemId) as numOfReview
+        From Item
+        where menuId=1 and numOfPeople Like ? and material Like ?   and used Like ?  and color Like  ?  ;
     `;
     const [itemsRows] = await connection.query(selectItemsListQuery,params);
 
@@ -35,18 +35,19 @@ async function selectFilteredFurniture(connection, params) {
 async function selectFilteredFabric(connection, params) {
     console.log(params);
     const selectItemsListQuery = `
-        select F.itemId,
-               (select photoUrl from FabricPicture
-                where photoId = (select max(photoId) from FabricPicture where itemId= F.itemId)) as mainPic,
-               (select I.companyName) as companyName,
-               (select I.itemName) as itemName,
-               (select I.sale) as salePrice,
-               (select I.price) as originalPrie,
-               (100-ceil(round(I.sale/I.price,3)*100)) as percenttage,
-               (select I.deliveryFee) as deliveryFee,
-               (select count(reviewId) from Review where itemId= I.itemId) as numOfReview
-        from (Fabric F inner join  Item I on F.itemId =I.itemId)
-        where color Like ? and season Like ? and pattern Like ?;
+        select itemId,
+               (select photoUrl from ItemPicture
+                where photoId = (select max(photoId) from ItemPicture where itemId= Item.itemId)) as mainPic,
+               (companyName) as companyName,
+               (itemName) as itemName,
+               (sale) as salePrice,
+               (price) as originalPrice,
+               (100-ceil(round(sale/price,3)*100)) as percenttage,
+               (deliveryFee) as deliveryFee,
+               (select AVG(reviewAvg) From ReviewRate where ReviewRate.itemId=Item.itemId) as reviewRate,
+               (select count(reviewId) from Review where itemId= Item.itemId) as numOfReview
+        from  Item
+        where menuId =2 and  color Like ? and season Like ? and pattern Like ?;
 
 
     `;
@@ -56,19 +57,20 @@ async function selectFilteredFabric(connection, params) {
 }
 async function   selectFilteredLight(connection, params) {
     const selectItemsListQuery = `
-        select L.itemId,
-               (select photoUrl from FabricPicture
-                where photoId = (select max(photoId) from FurniturePicture where itemId= L.itemId)) as mainPic,
-               (select I.companyName) as companyName,
-               (select I.itemName) as itemName,
-               (select I.sale) as salePrice,
-               (select I.price) as originalPrie,
-               (100-ceil(round(I.sale/I.price,3)*100)) as percenttage,
-               (select I.deliveryFee) as deliveryFee,
-               (select count(reviewId) from Review where itemId= I.itemId) as numOfReview
-        from (Light L inner join  Item I on L.itemId =I.itemId)
+        select itemId,
+               (select photoUrl from ItemPicture
+                where photoId = (select max(photoId) from ItemPicture where itemId= Item.itemId)) as mainPic,
+               (companyName) as companyName,
+               (itemName) as itemName,
+               (sale) as salePrice,
+               (price) as originalPrice,
+               (100-ceil(roundsale/price,3)*100)) as percenttage,
+               (deliveryFee) as deliveryFee,
+                (select AVG(reviewAvg) From ReviewRate where ReviewRate.itemId=Item.itemId) as reviewRate,
+               (select count(reviewId) from Review where itemId= Item.itemId) as numOfReview
+        from Item
 
-        where color Like ? and material Like ? and type Like ? and design LIKE ?;
+        where menuId=3 and color Like ? and material Like ? and type Like ? and design LIKE ?;
     `;
     const [itemsRows] = await connection.query(selectItemsListQuery,params);
 
@@ -76,19 +78,19 @@ async function   selectFilteredLight(connection, params) {
 }
 async function   selectFilteredAppliance(connection, params) {
     const selectItemsListQuery = `
-        select H.itemId,
-               (select photoUrl from FabricPicture
-                where photoId = (select max(photoId) from FurniturePicture where itemId= H.itemId)) as mainPic,
-               (select I.companyName) as companyName,
-               (select I.itemName) as itemName,
-               (select I.sale) as salePrice,
-               (select I.price) as originalPrie,
-               (100-ceil(round(I.sale/I.price,3)*100)) as percenttage,
-               (select I.deliveryFee) as deliveryFee,
-               (select count(reviewId) from Review where itemId= I.itemId) as numOfReview
-        from (Homeappliance H inner join  Item I on H.itemId =I.itemId)
-
-        where brand Like ? and energyEfficiency Like ? and design Like ? ;
+        select itemId,
+               (select photoUrl from ItemPicture
+                where photoId = (select max(photoId) from ItemPicture where itemId= Item.itemId)) as mainPic,
+               (companyName) as companyName,
+               (itemName) as itemName,
+               (sale) as salePrice,
+               (price) as originalPrice,
+               (100-ceil(round(sale/price,3)*100)) as percenttage,
+               (deliveryFee) as deliveryFee,
+               (select AVG(reviewAvg) From ReviewRate where ReviewRate.itemId=Item.itemId) as reviewRate,
+               (select count(reviewId) from Review where itemId= Item.itemId) as numOfReview
+        from Item
+        where menuId=4 and brand Like ? and energyEfficiency Like ? and design Like ? ;
     `;
     const [itemsRows] = await connection.query(selectItemsListQuery,params);
 
@@ -96,12 +98,13 @@ async function   selectFilteredAppliance(connection, params) {
 }
 
 async function   selectItems(connection, itemName) {
+    console.log(itemName);
     const selectItemsListQuery = `
         select itemName, companyName, price, sale, 100-ceil(round(sale/price,3)*100)  as percenttage, reviewRate,
                (select count(reviewId) from Review where Review.itemId=I.itemId ) as numOfreview,
                (select photoUrl from ItemPicture where (select MAX(photoId) from ItemPicture)) as 'mainPhoto'
 
-        from Item I where itemName Like'%';
+        from Item I where itemName Like ?;
     `;
     const [itemsRows] = await connection.query(selectItemsListQuery,itemName);
 
@@ -203,8 +206,87 @@ async function   selectReviewListRate(connection, itemId) {
     return itemsRows;
 }
 
+async function   selectUserIdNum(connection, userId) {
+    const selectUserIdNumQuery = `
+        select count(userId) from User where userId=?;
+
+    `;
+    const [itemsRows] = await connection.query(selectUserIdNumQuery,userId);
+
+    return itemsRows;
+}
+async function   selectUserIdStatus(connection, userId) {
+    const selectUserIdNumQuery = `
+        select status from User where userId=?;
+
+    `;
+    const [itemsRows] = await connection.query(selectUserIdNumQuery,userId);
+
+    return itemsRows;
+}
+
+async function   selectBoughtHistory(connection, para) {
+    const selectBoughtHistoryQuery = `
+        select count(userId) as cnt from BoughtHistory where userId=? and itemId=?;
+
+    `;
+    const [itemsRows] = await connection.query(selectBoughtHistoryQuery,para);
+
+    return itemsRows[0].cnt;
+}
+async function   selectReviewExist(connection, para) {
+    const selectReviewExistQuery = `
+        select  count(userId) as cnt from Review where userId=? and itemId=? ;
+
+    `;
+    const [itemsRows] = await connection.query(selectReviewExistQuery,para);
+console.log(itemsRows[0].cnt,"asdf");
+    return itemsRows[0].cnt;
+}
 
 
+async function postReview(connection, para) {
+    const postReviewsQuery = `
+        INSERT INTO Review(userId,itemId, context,photo)VALUES (?,?,?,?);
+
+    `;
+    const [itemsRows] = await connection.query(postReviewsQuery,para);
+
+    return;
+}
+
+
+async function postReviewRate(connection, para) {
+    const postReviewsQuery = `
+        INSERT INTO Review(userId,itemId,durability, design,price,delivery ,reviewAvg)VALUES (?,?,?,?,?,?,?);
+
+    `;
+    const [itemsRows] = await connection.query(postReviewsQuery,para);
+
+    return itemsRows;
+}
+
+async function selectMyReviews(connection, userId) {
+    const postReviewsQuery = `
+        select R.createdAt,
+               R.reviewId,
+               (select itemName from Item where itemId=R.itemId) as itemName,
+               (select companyName from Item where itemId=R.itemId) as companyName,
+               (select boughtPrice from BoughtHistory where userId=B.userId and itemId=B.itemId) as boughtPrice,
+               (select num from BoughtHistory where  userId=B.userId and itemId=B.itemId) as num,
+               (select confirmed from BoughtHistory where userId=B.userId and itemId=B.itemId) as confirmed,
+               (select photoUrl from ItemPicture where photoId=(select max(photoId) from ItemPicture where ItemId)) as photoUrl
+
+        from((Review R inner Join Item I on R.itemId =I.itemId)
+                inner Join BoughtHistory B on R.itemId =B.itemId)
+        where R.userId =?;
+
+
+    `;
+    const [itemsRows] = await connection.query(postReviewsQuery,userId);
+
+    return itemsRows;
+}
 
 
 module.exports = {
@@ -218,6 +300,13 @@ module.exports = {
     selectPhotoList,
     selectContentList,selectTotalReviewRate,selectReviewListRate,
     selectTotalReviewNum,
+    selectUserIdNum,
+    selectUserIdStatus,
+    selectBoughtHistory,
+    selectReviewExist,
+    postReview,
+    postReviewRate,
+    selectMyReviews,
 
 
 
