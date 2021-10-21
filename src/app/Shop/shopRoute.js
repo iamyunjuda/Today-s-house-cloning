@@ -5,9 +5,12 @@ module.exports = function(app){
     const jwtMiddleware = require('../../../config/jwtMiddleware');
     const multer = require('multer');
     const upload = ({dest: 'public/images/'});
-
+//
     // 1. 유저 생성 (회원가입) API
-   // app.post('/app/users', user.postUsers);
+    // app.post('/app/users', user.postUsers);
+
+    //4. 모든 아이템 목록 불러오기
+    app.get('/app/items',shop.getAllItems)
 
     //5. 카테고리의 아이템 불러오기
     app.get('/app/items',shop.getMenuItems);
@@ -27,6 +30,8 @@ module.exports = function(app){
     //19.나의 리뷰를 불러오기
     app.get('/app/:userId/reviews',jwtMiddleware,shop.getMyReview);
 
+    //26. 상품 구매하기 옵션 불러오는 API
+    app.get('/app/:userId/purchases',jwtMiddleware,shop.getItemOption);
 
 };
 

@@ -12,7 +12,7 @@ exports.retrieveUserList = async function (email) {
     connection.release();
 
     return userListResult;
-
+//
   } else {
     const connection = await pool.getConnection(async (conn) => conn);
     const userListResult = await userDao.selectUserEmail(connection, email);

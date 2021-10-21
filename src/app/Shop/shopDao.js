@@ -1,16 +1,38 @@
+async function selectAllItems(connection) {
+    const selectAllItemsQuery = `
+
+        select itemId, itemName, companyName, price, sale, 100-ceil(round(sale/price,3)*100)  as percenttage,
+               reviewRate,
+               (select count(reviewId) from Review where Review.itemId ) as numOfreview,
+               (select photoUrl from ItemPicture where photoId =(select MAX(photoId) from ItemPicture)) as 'mainPhoto'
+
+
+        from Item;
+
+
+
+      
+                `;
+    const [itemsRows] = await connection.query(selectAllItemsQuery);
+//
+    return itemsRows;
+}
+
+
+
 //카테고리별로 아이템 불러오기
 async function selectMenuItems(connection,menuId) {
-  const selectItemsListQuery = `
-      select companyName, itemName, sale, 100-ceil(round(sale/price,3)*100)  as percenttage, deliveryFee,
+    const selectItemsListQuery = `
+      select itemId, companyName, itemName, sale, 100-ceil(round(sale/price,3)*100)  as percenttage, deliveryFee,
              (Select count(reviewId) from Review where itemid = I.itemid) as 'numOfReviews',
               reviewRate
 
       From (Item I left outer Join Review R on I.itemId = R.itemId)
       where I.menuId = ?;
                 `;
-  const [itemsRows] = await connection.query(selectItemsListQuery,menuId);
-
-  return itemsRows;
+    const [itemsRows] = await connection.query(selectItemsListQuery,menuId);
+//
+    return itemsRows;
 }
 async function selectFilteredFurniture(connection, params) {
     const selectItemsListQuery = `
@@ -64,12 +86,11 @@ async function   selectFilteredLight(connection, params) {
                (itemName) as itemName,
                (sale) as salePrice,
                (price) as originalPrice,
-               (100-ceil(roundsale/price,3)*100)) as percenttage,
+               (100-ceil(round(sale/price,3)*100)) as percenttage,
                (deliveryFee) as deliveryFee,
                 (select AVG(reviewAvg) From ReviewRate where ReviewRate.itemId=Item.itemId) as reviewRate,
                (select count(reviewId) from Review where itemId= Item.itemId) as numOfReview
         from Item
-
         where menuId=3 and color Like ? and material Like ? and type Like ? and design LIKE ?;
     `;
     const [itemsRows] = await connection.query(selectItemsListQuery,params);
@@ -100,11 +121,13 @@ async function   selectFilteredAppliance(connection, params) {
 async function   selectItems(connection, itemName) {
     console.log(itemName);
     const selectItemsListQuery = `
-        select itemName, companyName, price, sale, 100-ceil(round(sale/price,3)*100)  as percenttage, reviewRate,
+        select itemId, itemName, companyName, price, sale, 100-ceil(round(sale/price,3)*100)  as percenttage,
+               reviewRate,
                (select count(reviewId) from Review where Review.itemId=I.itemId ) as numOfreview,
-               (select photoUrl from ItemPicture where (select MAX(photoId) from ItemPicture)) as 'mainPhoto'
+               (select photoUrl from ItemPicture where photoId =(select MAX(photoId) from ItemPicture)) as 'mainPhoto'
 
-        from Item I where itemName Like ?;
+
+        from Item I where itemName Like '?';
     `;
     const [itemsRows] = await connection.query(selectItemsListQuery,itemName);
 
@@ -114,7 +137,7 @@ async function   selectItems(connection, itemName) {
 async function   selectDeliveryInfo(connection, itemId) {
     const selectDeliveryInfoQuery = `
 
-        select deliveryWay, deliveryFee, paymentWay,
+        select itemId, deliveryWay, deliveryFee, paymentWay,
                case
                    when freeDeliveryCondition!='' then concat(FORMAT(freeDeliveryCondition,0),'원 이상 구매시 무료배송')
                    END as freeDeliveryCondition,
@@ -135,7 +158,7 @@ async function   selectDeliveryInfo(connection, itemId) {
 async function   selectPhotoList(connection, itemId) {
     const selectDeliveryInfoQuery = `
 
-        SELECT photoUrl From ItemPicture where itemId = ?;
+        SELECT itemId, photoUrl From ItemPicture where itemId = ?;
 
     `;
     const [itemsRows] = await connection.query(selectDeliveryInfoQuery,itemId);
@@ -144,7 +167,7 @@ async function   selectPhotoList(connection, itemId) {
 }
 async function   selectContentList(connection, itemId) {
     const selectContentLisQuery = `
-        select I.companyName, I.itemName,I.reviewRate, I.price, I.sale,  (100-ceil(round(I.sale/I.price,3)*100)) as percenttage,
+        select I.itemId, I.companyName, I.itemName,I.reviewRate, I.price, I.sale,  (100-ceil(round(I.sale/I.price,3)*100)) as percenttage,
                concat(ceil(I.sale*0.003),'P 적립 (WELCOME 0.3% 적용)') as profit,
                case when I.sale > 50000
                         then concat('월 ',format(ceil(I.sale/7),0),'원 (7개월) 무이자활부')END as 'monthlyPay',
@@ -169,7 +192,7 @@ async function   selectContentList(connection, itemId) {
 
 async function   selectTotalReviewRate(connection, params) {
     const selectContentLisQuery = `
-        select
+        select ItemId,
             case  when itemId=? Then  AVG(reviewAvg) END as avgRate
         from ReviewRate where itemId=?;
 
@@ -181,7 +204,7 @@ async function   selectTotalReviewRate(connection, params) {
 }
 async function   selectTotalReviewNum(connection, itemId) {
     const selectTotalReviewNumQuery = `
-        select count(reviewId)as reviewNum from Review where itemId=?
+        select itemId, count(reviewId)as reviewNum from Review where itemId=?
     `;
     const [itemsRows] = await connection.query(selectTotalReviewNumQuery,itemId);
 
@@ -191,7 +214,8 @@ async function   selectTotalReviewNum(connection, itemId) {
 
 async function   selectReviewListRate(connection, itemId) {
     const selectReviewListQuery = `
-        select R.reviewId,
+        select R.itemId,
+               R.reviewId,
                (select U.userNickName from User Where userId=R.userId) as userName,
                (select B.reviewAvg from ReviewRate where userId= R.userId) as reviewAvg,
                concat(R.createdAt, '오늘의집 구매'),
@@ -240,7 +264,7 @@ async function   selectReviewExist(connection, para) {
 
     `;
     const [itemsRows] = await connection.query(selectReviewExistQuery,para);
-console.log(itemsRows[0].cnt,"asdf");
+    console.log(itemsRows[0].cnt,"asdf");
     return itemsRows[0].cnt;
 }
 
@@ -288,6 +312,43 @@ async function selectMyReviews(connection, userId) {
     return itemsRows;
 }
 
+async function selectItemOptionName(connection, itemId) {
+    const selectItemOptionQuery = `select optionCategoryName from ItemOptionCategory where itemId = ?; `;
+    const [itemsRows] = await connection.query(selectItemOptionQuery ,itemId);
+
+    return itemsRows;
+}
+async function selectFirstItemOption(connection, itemId) {
+    const selectItemOptionQuery = `
+        select optionName,
+               case
+                   when (minPrice!=maxPrice) then concat((format(minprice,0)),'원 ~ ',format(maxPrice,0),'원')
+                   when (minPrice=maxPrice) then concat(format(minprice,0),'원')
+                   END as price
+        from ItemOption where
+                optionCategoryId =(select Min(optionCategoryId) from ItemOptionCategory
+                                   where itemId=?)
+
+
+    `;
+    const [itemsRows] = await connection.query(selectItemOptionQuery ,itemId);
+
+    return itemsRows;
+}
+
+async function selectSecondItemOption(connection, para) {
+    const selectItemOptionQuery = `
+        select optionName, price from FinalItemOption where optionId =(
+            (select optionId from ItemOption where optionId = (select min(optionId) from ItemOption where optionCategoryId=
+                                                                                                          (select Min(optionCategoryId) from ItemOptionCategory
+                                                                                                           where itemId=?))+?));
+
+
+    `;
+    const [itemsRows] = await connection.query(selectItemOptionQuery ,para);
+
+    return itemsRows;
+}
 
 module.exports = {
     selectMenuItems,
@@ -307,7 +368,9 @@ module.exports = {
     postReview,
     postReviewRate,
     selectMyReviews,
-
-
+    selectItemOptionName,
+    selectFirstItemOption,
+    selectSecondItemOption,
+    selectAllItems,
 
 };

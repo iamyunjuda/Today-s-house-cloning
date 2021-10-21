@@ -7,7 +7,7 @@ async function selectUser(connection) {
   const [userRows] = await connection.query(selectUserListQuery);
   return userRows;
 }
-
+//
 // 이메일로 회원 조회
 async function selectUserEmail(connection, email) {
   const selectUserEmailQuery = `
@@ -48,8 +48,8 @@ async function insertUserInfo(connection, insertUserInfoParams) {
         VALUES (?, ?, ?,?,?);
     `;
   const insertUserInfoRow = await connection.query(
-    insertUserInfoQuery,
-    insertUserInfoParams
+      insertUserInfoQuery,
+      insertUserInfoParams
   );
 
   return insertUserInfoRow;

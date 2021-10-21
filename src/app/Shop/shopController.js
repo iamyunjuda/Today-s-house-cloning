@@ -6,10 +6,26 @@ const {response, errResponse} = require("../../../config/response");
 const url =require('url');
 const querystring = require('querystring');
 
-
+//
 const regexEmail = require("regex-email");
 const {emit} = require("nodemon");
+/**
+ * API No. 4
+ * API Name : 모든 아이템 불러오기
+ * [get] /app/items
+ *
+ *
+ */
 
+exports.getAllItems = async function (req, res) {
+
+
+    const getItemsResponse = await shopProvider.retrieveAllItemsList();
+    return res.send(response(baseResponse.SUCCESS,getItemsResponse));
+
+
+
+};
 
 
 /**
@@ -49,8 +65,7 @@ exports.getFilteredItems = async function (req, res) {
     const menuId = req.params.menuId;
     const parsedData = url.parse(_url,true).query;
 
-
-
+    console.log(menuId, parsedData.type);
 
     // 빈 값 체크
     if (!menuId)
@@ -70,7 +85,7 @@ exports.getFilteredItems = async function (req, res) {
     }
 
     if(menuId==4) {//가구 페이지 필터 사용
-       const getFilteredApplianceResponse = await shopProvider.retrieveFilteredApplianceItemsList(menuId,parsedData.brand, parsedData.energyEfficiency,parsedData.design);
+        const getFilteredApplianceResponse = await shopProvider.retrieveFilteredApplianceItemsList(menuId,parsedData.brand, parsedData.energyEfficiency,parsedData.design);
         return res.send(response(baseResponse.SUCCESS,getFilteredApplianceResponse));
     }
 
@@ -181,20 +196,20 @@ exports.postReview = async function (req, res) {
 
     if(checkUserIdExist[0].status=='UNACTIVED')
         return res.send(response(baseResponse.USER_STATUS_UNAVTIVED));
-/* 벨리데이션
+    /* 벨리데이션
 
 
-    //해당 상품을 구매했는지 확인
-    const checkResponsibility   = await shopProvider.retrieveCheckResponsibility(userId,itemId);
-    if( checkResponsibility ==0)
-        return res.send(response(baseResponse.SHOP_ITEM_BOUGHTHISTORY_NOT_EXIST));
+        //해당 상품을 구매했는지 확인
+        const checkResponsibility   = await shopProvider.retrieveCheckResponsibility(userId,itemId);
+        if( checkResponsibility ==0)
+            return res.send(response(baseResponse.SHOP_ITEM_BOUGHTHISTORY_NOT_EXIST));
 
-    //이미 작성한 리뷰가 있는 것은 아닌지
-    const checkReviewExist  = await shopProvider.retrieveCheckReviewExist(userId,itemId);
-    if(checkReviewExist>0)
-        return res.send(response(baseResponse.SHOP_ITEM_REVIEW_EXIST));
+        //이미 작성한 리뷰가 있는 것은 아닌지
+        const checkReviewExist  = await shopProvider.retrieveCheckReviewExist(userId,itemId);
+        if(checkReviewExist>0)
+            return res.send(response(baseResponse.SHOP_ITEM_REVIEW_EXIST));
 
-*/
+    */
     const postReviewResponse = await shopService.retrievePostReview(userId,itemId, durability, design,price,delivery, photo,content);
     return res.send(response(postReviewResponse));
 
@@ -214,11 +229,12 @@ exports.postReview = async function (req, res) {
  */
 
 exports.getMyReview = async function (req, res) {
+    const userId = req.params.userId;
     const userIdFromJWT = req.verifiedToken.userId;
     if (userIdFromJWT != userId) {
         res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
     }
-    const userId = req.params.userId;
+
     // 빈 값 체크
     if (!userId)
         return res.send(response(baseResponse.USER_USERID_EMPTY));
@@ -232,6 +248,43 @@ exports.getMyReview = async function (req, res) {
 
     const getReviewResponse = await shopProvider.retrieveGetMyReview(userId);
     return res.send(response(baseResponse.SUCCESS,getReviewResponse));
+
+
+
+
+};
+
+
+
+/**
+ * API No. 20
+ * API Name : 아이템 구매위한 옵션들 불러오기
+ * [get] /app/:userId/reviews
+ * pathVariable : userId
+ *
+ *
+ *
+ */
+
+exports.getItemOption = async function (req, res) {
+    const userIdFromJWT = req.verifiedToken.userId;
+    const userId = req.params.userId;
+    const _url = req.url;
+    const parsedData = url.parse(_url,true).query;
+    if (userIdFromJWT != userId) {
+        res.send(errResponse(baseResponse.USER_ID_NOT_MATCH));
+    }
+
+
+
+    // 빈 값 체크
+    if (!userId)
+        return res.send(response(baseResponse.USER_USERID_EMPTY));
+    //const checkUserId = await shopProvider.retrieveUserIdExist(userId);
+
+
+    const getItemOptionResponse = await shopProvider.retrieveGetItemOptions(parsedData.itemId, parsedData.firstOption);
+    return res.send(response(baseResponse.SUCCESS,getItemOptionResponse));
 
 
 

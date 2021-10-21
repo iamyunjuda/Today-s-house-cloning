@@ -6,7 +6,7 @@ const shopDao = require("./shopDao");
 const baseResponse = require("../../../config/baseResponseStatus");
 const {response} = require("../../../config/response");
 const {errResponse} = require("../../../config/response");
-
+//
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const {connect} = require("http2");
@@ -20,7 +20,7 @@ exports.retrievePostReview = async function (userId,itemId, durability, design,p
         var avg= (durability+design+price+delivery)/4.0;
         const para2= [userId, itemId, durability, design,price,delivery,avg];
 
-      await connection.beginTransaction();
+        await connection.beginTransaction();
 
         const postReview = await shopDao.postReview(connection, para);
         const postReviewRate = await shopDao.postReviewRate(connection, para2);
